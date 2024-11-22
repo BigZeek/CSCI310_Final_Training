@@ -63,21 +63,20 @@ board = [
     "############################"
 ]
 
-# TODO Load images for ghosts and Pac-Man
-
 pacman_image = pygame.image.load('./assets/Pacman.png')
 
-"""ghost_images = [
-    pygame.image.load(),
-    pygame.image.load(),
-    pygame.image.load(),
-    pygame.image.load()
+ghost_images = [
+    pygame.image.load('./assets/Blinky.png'),
+    pygame.image.load('./assets/Clyde.png'),
+    pygame.image.load('./assets/Inky.png'),
+    pygame.image.load('./assets/Pinky.png')
 ]
-"""
+
+# Scaled Pac-Man and ghost images
 pacman_sprite = pygame.transform.scale(screen, (CELL_SIZE, CELL_SIZE))
-'''for i in range (len(ghost_images)):
+for i in range (len(ghost_images)):
     ghost_images[i] = pygame.transform.scale(CELL_SIZE,CELL_SIZE)
-    '''
+    
 def draw_board():
     for y, row in enumerate(board):
         for x, cell in enumerate(row):
@@ -87,4 +86,99 @@ def draw_board():
                 pygame.draw.circle(screen, WHITE, (x * CELL_SIZE // 2, y* CELL_SIZE + CELL_SIZE // 2), 3)
             elif cell == 'o':
                 pygame.draw.circle(screen, WHITE, (x * CELL_SIZE + CELL_SIZE // 2, y * CELL_SIZE + CELL_SIZE // 2), 7)
-                
+
+# Draw Pac-Man and the ghosts
+def draw_Pacman():
+    screen.blit(pacman_sprite, (pacman_x * CELL_SIZE, pacman_y * CELL_SIZE))
+    
+def draw_ghosts():
+    for i, ghost in enumerate(ghosts):
+        screen.blit(ghost_images[i], (ghost['x'] * CELL_SIZE, ghost['y'] * CELL_SIZE))
+
+# Function defines Pac-Man movement
+def move_pacman():
+    global pacman_x, pacman_y, score
+    if pacman_direction == 'LEFT' and board[pacman_y][pacman_x - 1] != '#':
+        pacman_x -= 1
+    elif pacman_direction == 'RIGHT' and board[pacman_y][pacman_x + 1] != '#':
+        pacman_x += 1
+    elif pacman_direction == 'UP' and board[pacman_y - 1][pacman_x] != '#':
+        pacman_y -= 1
+    elif pacman_direction == 'DOWN' and board[pacman_y + 1][pacman_x] != '#':
+        pacman_y += 1
+    
+    if board[pacman_y][pacman_x] == '.':
+        board[pacman_y] = board[pacman_y][:pacman_x] + ' ' + board[pacman_y][pacman_x + 1:]
+        score += 10
+    elif board[pacman_y][pacman_x] == 'o':
+        board[pacman_y] = board[pacman_y][:pacman_x] + ' ' + board[pacman_y][pacman_x + 1:]
+        score += 50
+
+# Function defines ghost movement
+def move_ghosts():
+    for ghost in ghosts:
+        direction = random.choice(['LEFT', 'RIGHT', 'UP', 'DOWN'])
+        if direction == 'LEFT' and board[ghost['y']][ghost['x'] - 1] != '#':
+            ghost['x'] -= 1
+        elif direction == 'RIGHT' and board[ghost['y']][ghost['x'] + 1] != '#':
+            ghost['x'] += 1
+        elif direction == 'UP' and board[ghost['y'] - 1][ghost['x']] != '#':
+            ghost['y'] -= 1
+        elif direction == 'DOWN' and board[ghost['y'] + 1][ghost['x']] != '#':
+            ghost['y'] += 1
+            
+# Check for collisions with ghosts
+def check_collisions():
+    for ghost in ghosts:
+        if ghost['x'] == pacman_x and ghost['y'] == pacman_y:
+            return True
+    return False
+
+# Check if all pellets are eaten and game is won
+def check_all_pellets_eaten():
+    for row in board:
+        if '.' in row or 'o' in row:
+            return False
+    return True
+
+# Main game loop
+clock = pygame.time.Clock()
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                pacman_direction = 'LEFT'
+            elif event.key == pygame.K_RIGHT:
+                pacman_direction = 'RIGHT'
+            elif event.key == pygame.K_UP:
+                pacman_direction = 'UP'
+            elif event.key == pygame.K_DOWN:
+                pacman_direction = 'DOWN'
+
+    move_pacman()
+    move_ghosts()
+
+    if check_collisions():
+        print("Game Over!")
+        running = False
+
+    if check_all_pellets_eaten():
+        print("You Win!")
+        running = False
+
+    screen.fill(BLACK)
+    draw_board()
+    draw_Pacman()
+    draw_ghosts()
+
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, SCREEN_HEIGHT - 30))
+
+    pygame.display.flip()
+    clock.tick(FPS)
+
+pygame.quit()
+sys.exit()
