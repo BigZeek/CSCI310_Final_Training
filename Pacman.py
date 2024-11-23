@@ -1,5 +1,5 @@
 """
-    Author: Zak Groenewold
+    Author: Zak Groenewold, Dinesh Seveti, Arne Samuel
     Date: 11/20/2024
     CSCI310
     Pacman game utilizing multithreading
