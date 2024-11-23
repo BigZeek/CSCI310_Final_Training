@@ -27,7 +27,7 @@ BLUE = (0,0,255)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Pac-Man")
 
-font = pygame.font.SysFont('Arial', 18)
+font = pygame.font.SysFont('Arial', 18) or pygame.font.Font(None, 18)
 
 board = [
     "############################",
@@ -63,19 +63,23 @@ board = [
     "############################"
 ]
 
-pacman_image = pygame.image.load('./assets/Pacman.png')
-
-ghost_images = [
-    pygame.image.load('./assets/Blinky.png'),
-    pygame.image.load('./assets/Clyde.png'),
-    pygame.image.load('./assets/Inky.png'),
-    pygame.image.load('./assets/Pinky.png')
-]
+try:
+    pacman_image = pygame.image.load('./assets/Pacman.png')
+    ghost_images = [
+        pygame.image.load('./assets/Blinky.png'),
+        pygame.image.load('./assets/Clyde.png'),
+        pygame.image.load('./assets/Inky.png'),
+        pygame.image.load('./assets/Pinky.png')
+    ]
+except FileNotFoundError:
+    print("Missing image assets, unable to render game.")
+    sys.exit()
 
 # Scaled Pac-Man and ghost images
-pacman_sprite = pygame.transform.scale(screen, (CELL_SIZE, CELL_SIZE))
+pacman_sprite = pygame.transform.scale(pacman_image, (CELL_SIZE, CELL_SIZE))
+
 for i in range (len(ghost_images)):
-    ghost_images[i] = pygame.transform.scale(CELL_SIZE,CELL_SIZE)
+    ghost_images[i] = pygame.transform.scale(ghost_images[i], (CELL_SIZE,CELL_SIZE))
     
 def draw_board():
     for y, row in enumerate(board):
@@ -83,7 +87,7 @@ def draw_board():
             if cell == '#':
                 pygame.draw.rect(screen, BLUE, (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             elif cell == '.':
-                pygame.draw.circle(screen, WHITE, (x * CELL_SIZE // 2, y* CELL_SIZE + CELL_SIZE // 2), 3)
+                pygame.draw.circle(screen, WHITE, (x * CELL_SIZE + CELL_SIZE // 2, y* CELL_SIZE + CELL_SIZE // 2), 3)
             elif cell == 'o':
                 pygame.draw.circle(screen, WHITE, (x * CELL_SIZE + CELL_SIZE // 2, y * CELL_SIZE + CELL_SIZE // 2), 7)
 
@@ -97,7 +101,7 @@ def draw_ghosts():
 
 # Function defines Pac-Man movement
 def move_pacman():
-    global pacman_x, pacman_y, score
+    global pacman_x, pacman_y, score, pacman_direction 
     if pacman_direction == 'LEFT' and board[pacman_y][pacman_x - 1] != '#':
         pacman_x -= 1
     elif pacman_direction == 'RIGHT' and board[pacman_y][pacman_x + 1] != '#':
@@ -140,6 +144,22 @@ def check_all_pellets_eaten():
         if '.' in row or 'o' in row:
             return False
     return True
+
+pacman_x, pacman_y = 1,1
+pacman_direction = None
+score = 0
+
+# Initialize ghost and Pac-Man positions
+# Global variables for positions
+pacman_x, pacman_y = 1, 1  # Pac-Man starts at (1, 1)
+
+ghosts = [
+    {'x': 13, 'y': 11},  # Blinky
+    {'x': 13, 'y': 12},  # Clyde
+    {'x': 14, 'y': 11},  # Inky
+    {'x': 14, 'y': 12}   # Pinky
+]
+
 
 # Main game loop
 clock = pygame.time.Clock()
